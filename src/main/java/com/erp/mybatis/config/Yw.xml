@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Yw">
+
+    <resultMap type="com.erp.entity.YW" id="YwResult">
+        <id column="DBID" jdbcType="INTEGER" property="dbid"/>
+        <result column="WLBM" jdbcType="VARCHAR" property="wlbm"/>
+        <result column="WLMC" jdbcType="VARCHAR" property="wlmc"/>
+        <result column="GYSBM" jdbcType="VARCHAR" property="gysbm"/>
+        <result column="GYSMC" jdbcType="VARCHAR" property="gysmc"/>
+        <result column="PRICE" jdbcType="DOUBLE" property="price"/>
+        <result column="NUMBER" jdbcType="INTEGER" property="number"/>
+        <result column="STAFFID" jdbcType="INTEGER" property="staffId"/>
+        <result column="STAFFNAME" jdbcType="VARCHAR" property="staffName"/>
+        <result column="SHOPPINGTIME" jdbcType="DATE" property="shoppingTime"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="delete" typeHandler="com.erp.handler.DelColumnTypeHandler"/>
+        <result column="CREATE_DATE" jdbcType="TIME" property="create_date"/>
+        <result column="UPDATE_DATE" jdbcType="TIME" property="update_date"/>
+    </resultMap>
+
+    <select id="queryReportDatas" parameterType="java.lang.String" resultMap="YwResult">
+        select yw.DBID,yw.WLBM,w.WLMC,yw.GYSBM,g.GYSMC,yw.PRICE,yw.NUMBER,
+            yw.STAFFID,s.STAFFNAME,yw.SHOPPINGTIME,yw.IS_DEL,yw.CREATE_DATE,yw.UPDATE_DATE
+        from <include refid="TableNames.t_tb_yw"/> yw
+        left join <include refid="TableNames.t_tb_staffinfo"/> s on yw.STAFFID=s.STAFFID and s.IS_DEL='0'
+        left join <include refid="TableNames.t_tb_wl"/> w on yw.WLBM=w.WLBM and w.IS_DEL='0'
+        left join <include refid="TableNames.t_tb_gys"/> g on yw.GYSBM=g.GYSBM and g.IS_DEL='0'
+        <where>
+            yw.IS_DEL='0'
+            <if test="_parameter!=null and !&quot;&quot;.equals(_parameter.trim()) and !&quot;null&quot;.equals(_parameter.trim())">
+                and yw.DBID=#{_parameter}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertReportData" parameterType="java.util.List">
+        <foreach collection="list" item="item">
+            insert into <include refid="TableNames.t_tb_yw"/>(WLBM,GYSBM,PRICE,NUMBER,STAFFID,SHOPPINGTIME,IS_DEL,CREATE_DATE,UPDATE_DATE)
+            values (#{item.wlbm},#{item.gysbm},#{item.price},#{item.number},#{item.staffId},#{item.shoppingTime},'0',getdate(),getdate())
+        </foreach>
+    </insert>
+
+    <update id="updateReportData" parameterType="java.util.List">
+        <foreach collection="list" item="item">
+            update <include refid="TableNames.t_tb_yw"/>
+            set WLBM=#{item.wlbm},GYSBM=#{item.gysbm},PRICE=#{item.price},NUMBER=#{item.number},
+                STAFFID=#{item.staffId},SHOPPINGTIME=#{item.shoppingTime},UPDATE_DATE=getdate()
+            where DBID=#{item.dbid}
+        </foreach>
+    </update>
+
+    <update id="deleteReportData" parameterType="java.util.List">
+        update <include refid="TableNames.t_tb_yw"/>
+        set IS_DEL='1',UPDATE_DATE=getdate()
+        where DBID in (
+            <foreach collection="list" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp.mybatis.mapper.IGroupDao">
+
+    <resultMap type="com.erp.entity.Group" id="GroupResult">
+        <id column="GROUPID" jdbcType="INTEGER" property="groupId"/>
+        <result column="GROUPCODE" jdbcType="VARCHAR" property="groupCode"/>
+        <result column="GROUPNAME" jdbcType="VARCHAR" property="groupName"/>
+        <result column="GROUPDESC" jdbcType="VARCHAR" property="groupDesc"/>
+        <result column="MODULE" jdbcType="VARCHAR" property="module"/>
+        <result column="MODULES" jdbcType="VARCHAR" property="modules"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="is_del"/>
+        <result column="CREATE_STAFFID" jdbcType="INTEGER" property="create_staffId"/>
+        <result column="CREATE_DATE" jdbcType="TIME" property="create_date"/>
+        <result column="UPDATE_STAFFID" jdbcType="INTEGER" property="update_staffId"/>
+        <result column="UPDATE_DATE" jdbcType="TIME" property="update_date"/>
+    </resultMap>
+
+    <select id="queryGroups" resultMap="GroupResult">
+        select GROUPID,GROUPCODE,GROUPNAME,GROUPDESC,MODULE,MODULES,IS_DEL,CREATE_STAFFID,CREATE_DATE,UPDATE_STAFFID,UPDATE_DATE
+        from <include refid="TableNames.t_tb_sys_module_group"/>
+        where IS_DEL='0'
+        order by CREATE_DATE asc
+    </select>
+
+    <select id="queryGroupByGroupId" parameterType="com.erp.entity.Group" resultMap="GroupResult">
+        select GROUPID,GROUPCODE,GROUPNAME,GROUPDESC,MODULE,MODULES,IS_DEL,CREATE_STAFFID,CREATE_DATE,UPDATE_STAFFID,UPDATE_DATE
+        from <include refid="TableNames.t_tb_sys_module_group"/>
+        <where>
+            IS_DEL='0' and GROUPCODE=#{groupCode}
+            <if test="groupId!=null">
+                and GROUPID!=#{groupId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertGroup" parameterType="com.erp.entity.Group">
+        insert into <include refid="TableNames.t_tb_sys_module_group"/>
+        (GROUPCODE,GROUPNAME,GROUPDESC,MODULE,MODULES,IS_DEL,CREATE_STAFFID,CREATE_DATE,UPDATE_STAFFID,UPDATE_DATE)
+        values(#{groupCode},#{groupName},#{groupDesc},#{module},#{modules},'0',#{create_staffId},getdate(),#{update_staffId},getdate())
+    </insert>
+
+    <update id="updateGroup" parameterType="com.erp.entity.Group">
+        update <include refid="TableNames.t_tb_sys_module_group"/>
+        set GROUPCODE=#{groupCode},GROUPNAME=#{groupName},GROUPDESC=#{groupDesc},
+        MODULE=#{module},MODULES=#{modules},UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where GROUPID=#{groupId}
+    </update>
+
+    <update id="deleteGroup" parameterType="java.util.Map">
+        update <include refid="TableNames.t_tb_sys_module_group"/>
+        set IS_DEL='1',UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where GROUPID in (
+        <foreach collection="groupIdList" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </update>
+
+</mapper>

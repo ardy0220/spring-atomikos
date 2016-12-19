@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.chart.dao.IChartDao">
+    <resultMap type="com.erp.chart.povo.DatasetVO" id="DatasetVOResult">
+        <result column="PRICE" jdbcType="DOUBLE" property="price"/>
+        <result column="WLMC" jdbcType="VARCHAR" property="wlmc"/>
+        <result column="SHOPPINGTIME" jdbcType="DATE" property="shopping_time"/>
+        <result column="YJYF" jdbcType="VARCHAR" property="yjyf"/>
+        <result column="YJMC" jdbcType="VARCHAR" property="yjmc"/>
+        <result column="YJYE" jdbcType="DOUBLE" property="yjye"/>
+    </resultMap>
+
+    <select id="getWlCategoryDataset" parameterType="java.lang.String" resultMap="DatasetVOResult">
+        select y.PRICE, w.WLMC,  convert(VARCHAR(10), y.SHOPPINGTIME, 120) as SHOPPINGTIME
+        from <include refid="TableNames.t_tb_yw"/> y
+        left join <include refid="TableNames.t_tb_wl"/> w on y.WLBM=w.WLBM and w.IS_DEL='0'
+        <where>
+            y.IS_DEL='0'
+            <if test="_parameter!=null and !&quot;&quot;.equals(_parameter.trim()) and !&quot;null&quot;.equals(_parameter.trim())">
+                and y.WLBM=#{_parameter}
+            </if>
+        </where>
+        order by y.SHOPPINGTIME asc
+    </select>
+
+    <select id="getWlPieDataset" parameterType="java.lang.String" resultMap="DatasetVOResult">
+        select PRICE, convert(VARCHAR(10), SHOPPINGTIME, 120) as SHOPPINGTIME
+        from <include refid="TableNames.t_tb_yw"/>
+        where IS_DEL='0' and WLBM=#{_parameter}
+    </select>
+
+    <select id="getYjCategoryDataset" resultMap="DatasetVOResult">
+        select a.YJYF as YJYF, a.YJYE as YJYE
+        from (
+            select top 12 YJYF,YJYE
+            from <include refid="TableNames.t_tb_yj"/>
+            where IS_DEL='0' order by YJYF desc) a
+        order by a.YJYF asc
+    </select>
+
+
+</mapper>

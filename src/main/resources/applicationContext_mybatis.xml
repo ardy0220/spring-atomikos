@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+             http://www.springframework.org/schema/aop
+             http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+             http://www.springframework.org/schema/tx
+             http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+             http://www.springframework.org/schema/context
+             http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <!-- 开启自动扫包 -->
+    <context:component-scan base-package="com.erp">
+        <!--制定扫包规则，不扫描@Controller注解的JAVA类，其他的还是要扫描  -->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 启动AOP支持 -->
+    <aop:aspectj-autoproxy/>
+
+    <!-- 引入外部数据源配置信息 -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations" value="classpath:db.properties"></property>
+    </bean>
+
+    <!-- 配置数据源 -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${mssql.driver.classname}"></property>
+        <property name="url" value="${mssql.url}"></property>
+        <property name="username" value="${mssql.username}"></property>
+        <property name="password" value="${mssql.password}"></property>
+    </bean>
+
+    <!-- 配置Session工厂 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <!-- 加载mybatis.cfg.xml文件 -->
+        <property name="configLocation" value="classpath:mybatis.xml"></property>
+
+        <!--<property name="typeHandlers">-->
+        <!--<array>-->
+        <!--<value>com.erp.handler.DelColumnTypeHandler</value>-->
+        <!--<value>com.erp.handler.LastLoginTimeTypeHandler</value>-->
+        <!--</array>-->
+        <!--</property>-->
+
+        <!--
+            在classpath后面的*必不可少，缺少型号的话后面的通配符不起作用。
+            **表示可以表示任意多级目录
+            *表示多个任意字符
+         -->
+        <!--<property name="mapperLocations" value="classpath*:com/erp/config/*.xml"></property>-->
+        <!-- 自动扫描需要定义类别名的包，将包内的JAVA类的类名作为类别名 -->
+        <!--<property name="typeAliasesPackage" value="com.cy.ssm.beans"></property>-->
+    </bean>
+
+    <!--<bean id="mapperFactoryBean" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+        <!--<property name="mapperInterface" value="com.erp.mybatis.mapper.IProjectDao"></property>-->
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>-->
+    <!--</bean>-->
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.erp.mybatis.mapper,com.erp.chart.dao"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+    <!-- 配置事务管理器 -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!-- 基于注解的声明式事务，必须配置此项 -->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+    <!-- 基于AOP的声明式事务 -->
+    <!-- 定义个通知，指定事务管理器 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="delete*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="save*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="insert*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="resume*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="update*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="get*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="query*" propagation="SUPPORTS" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <!-- 配置一个切入点 -->
+        <aop:pointcut id="serviceMethods" expression="execution(* com.erp.dao.impl.*Impl.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethods"/>
+    </aop:config>
+
+</beans>

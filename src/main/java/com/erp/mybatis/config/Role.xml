@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Role">
+
+    <resultMap type="com.erp.entity.Role" id="RoleResult">
+        <id column="ROLEID" jdbcType="INTEGER" property="roleId"/>
+        <result column="ROLECODE" jdbcType="VARCHAR" property="roleCode"/>
+        <result column="ROLENAME" jdbcType="VARCHAR" property="roleName"/>
+        <result column="ROLEDESC" jdbcType="VARCHAR" property="roleDesc"/>
+        <result column="GROUPID" jdbcType="INTEGER" property="groupId"/>
+        <result column="GROUPNAME" jdbcType="VARCHAR" property="groupName"/>
+        <result column="MODULES" jdbcType="VARCHAR" property="modules"/>
+        <result column="R_IS_DEL" jdbcType="CHAR" property="is_del"/>
+        <result column="IS_INIT_PERMISSION" jdbcType="VARCHAR" property="is_init_permission"/>
+        <result column="PERMISSIONCOUNT" jdbcType="INTEGER" property="permissionCount"/>
+    </resultMap>
+
+    <select id="queryRole" resultMap="RoleResult">
+        select r.ROLEID,r.ROLECODE,r.ROLENAME,r.ROLEDESC,r.GROUPID,r.IS_DEL as R_IS_DEL,
+        r.IS_INIT_PERMISSION,g.GROUPNAME,g.MODULES,p1.PERMISSIONIDS
+        from <include refid="TableNames.t_tb_sys_role"/> r
+        left join <include refid="TableNames.t_tb_sys_module_group"/> g on r.GROUPID=g.GROUPID and g.IS_DEL='0'
+        left join (
+            select count(p.PERMISSIONID) as PERMISSIONIDS,p.ROLEID
+            from <include refid="TableNames.t_tb_sys_role_permission"/> p
+            where p.IS_DEL='0'
+            group by p.ROLEID
+        ) p1 on r.ROLEID=p1.ROLEID
+        where r.IS_DEL='0'
+    </select>
+
+    <select id="queryRoleByRoleId" parameterType="com.erp.entity.Role" resultMap="RoleResult">
+        select r.ROLEID,r.ROLECODE,r.ROLENAME,r.ROLEDESC,r.GROUPID,r.IS_DEL as R_IS_DEL,r.IS_INIT_PERMISSION,g.GROUPNAME
+        from  <include refid="TableNames.t_tb_sys_role"/> r
+        left join <include refid="TableNames.t_tb_sys_module_group"/> g on r.GROUPID=g.GROUPID and g.IS_DEL='0'
+        <where>
+            r.IS_DEL='0' and r.ROLECODE=#{roleCode}
+            <if test="roleId!=null">
+                and r.ROLEID!=#{roleId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertRole" parameterType="com.erp.entity.Role">
+        insert into <include refid="TableNames.t_tb_sys_role"/> (ROLECODE,ROLENAME,ROLEDESC,GROUPID,IS_DEL,IS_INIT_PERMISSION)
+        values (#{roleCode},#{roleName},#{roleDesc},#{groupId},'0','0')
+    </insert>
+
+    <update id="updateRole" parameterType="com.erp.entity.Role">
+        update <include refid="TableNames.t_tb_sys_role"/>
+        set ROLECODE=#{roleCode},ROLENAME=#{roleName},ROLEDESC=#{roleDesc},
+            GROUPID=#{groupId},IS_INIT_PERMISSION=#{is_init_permission}
+        where ROLEID=#{roleId}
+    </update>
+
+    <update id="deleteRolePermissionByRoleId" parameterType="java.util.List">
+        update <include refid="TableNames.t_tb_sys_role_permission"/>
+        set IS_DEL='1'
+        where ROLEID in (
+            <foreach collection="list" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+    <update id="deleteRole" parameterType="java.util.List">
+        update <include refid="TableNames.t_tb_sys_role"/>
+        set IS_DEL='1',IS_INIT_PERMISSION='0'
+        where ROLEID in (
+            <foreach collection="list" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+</mapper>

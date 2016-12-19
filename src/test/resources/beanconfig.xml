@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<bean-package>
+    <base-package>com.erp</base-package>
+    <!--<dao>com.erp.dao</dao>-->
+    <!--<service>com.erp.service</service>-->
+</bean-package>

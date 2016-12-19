@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Yj">
+
+    <resultMap type="com.erp.entity.YJ" id="YjResult">
+        <id column="DBID" jdbcType="INTEGER" property="dbid"/>
+        <result column="YJYF" jdbcType="VARCHAR" property="yjyf"/>
+        <result column="YJZC" jdbcType="DOUBLE" property="yjzc"/>
+        <result column="YJHZ" jdbcType="DOUBLE" property="yjhz"/>
+        <result column="YJYE" jdbcType="DOUBLE" property="yjye"/>
+        <result column="STAFFID" jdbcType="INTEGER" property="staffId"/>
+        <result column="STAFFNAME" jdbcType="VARCHAR" property="staffName"/>
+        <result column="YJLX" jdbcType="CHAR" property="yjlx"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="delete" typeHandler="com.erp.handler.DelColumnTypeHandler"/>
+        <result column="CREATE_DATE" jdbcType="TIME" property="create_date"/>
+        <result column="UPDATE_DATE" jdbcType="TIME" property="update_date"/>
+    </resultMap>
+
+    <select id="queryYJData" parameterType="java.util.Map" resultMap="YjResult">
+        select yj.DBID,yj.YJYF,yj.YJZC,yj.YJHZ,yj.YJYE,yj.STAFFID,yj.YJLX,yj.IS_DEL,yj.CREATE_DATE,yj.UPDATE_DATE,s.STAFFNAME
+        from <include refid="TableNames.t_tb_yj"/> yj
+        left join <include refid="TableNames.t_tb_staffinfo"/> s on yj.STAFFID=s.STAFFID and s.IS_DEL='0'
+        <where>
+            yj.IS_DEL='0'
+            <if test="yjyf!=null and !&quot;&quot;.equals(yjyf.trim()) and !&quot;null&quot;.equals(yjyf.trim())">
+                and convert(varchar(7), yj.YJYF,120)=#{yjyf}
+            </if>
+            <if test="dbid!=null and !&quot;&quot;.equals(dbid.trim()) and !&quot;null&quot;.equals(dbid.trim())">
+                and yj.DBID=#{dbid}
+            </if>
+        </where>
+        order by yj.YJYF asc
+    </select>
+
+    <insert id="insertYJData" parameterType="com.erp.entity.YJ">
+        insert into <include refid="TableNames.t_tb_yj"/> (YJYF,YJZC,YJHZ,YJYE,STAFFID,IS_DEL,YJLX,CREATE_DATE,UPDATE_DATE)
+        values (#{yjyf},#{yjzc},#{yjhz},#{yjye},#{staffId},'0',#{yjlx},getdate(),getdate())
+    </insert>
+
+    <update id="updateYJData" parameterType="com.erp.entity.YJ">
+        update <include refid="TableNames.t_tb_yj"/>
+        set YJYF=#{yjyf},YJZC=#{yjzc},YJHZ=#{yjhz},YJYE=#{yjye},STAFFID=#{staffId},UPDATE_DATE=getdate()
+        where DBID=#{dbid}
+    </update>
+
+    <select id="queryLastDataBeforeCurrent" parameterType="java.util.Map" resultMap="YjResult">
+        select top 1 YJYF,YJZC,YJHZ,YJYE,YJLX
+        from <include refid="TableNames.t_tb_yj"/>
+        <where>
+            IS_DEL='0' and convert(varchar(7), YJYF,120)<![CDATA[ < ]]>#{yjyf}
+            <if test="yjyf_before!=null and !&quot;&quot;.equals(yjyf_before.trim()) and !&quot;null&quot;.equals(yjyf_before.trim())">
+                and convert(varchar(7), YJYF,120)<![CDATA[ != ]]>#{yjyf_before}
+            </if>
+        </where>
+        order by YJYF desc
+    </select>
+
+    <update id="updateYJDataAfterCurrent" parameterType="java.util.Map">
+        update <include refid="TableNames.t_tb_yj"/>
+        set YJYE=YJYE+#{yjye_cy}, UPDATE_DATE=getdate()
+        where IS_DEL='0' and convert(varchar(7), YJYF,120)<![CDATA[ > ]]>#{yjyf}
+    </update>
+
+    <update id="deleteYJData" parameterType="java.lang.Integer">
+        update <include refid="TableNames.t_tb_yj"/>
+        set IS_DEL='1',UPDATE_DATE=getdate()
+        where DBID=#{_parameter}
+    </update>
+
+    <!-- StartUpListener.java中使用到 -->
+    <select id="initYJ" resultMap="YjResult">
+        select DBID,YJYF,YJZC,YJHZ,YJYE,STAFFID,YJLX,CREATE_DATE,UPDATE_DATE
+        from <include refid="TableNames.t_tb_yj"/>
+        where IS_DEL='0' and YJLX='1'
+    </select>
+
+</mapper>

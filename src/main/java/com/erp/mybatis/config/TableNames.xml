@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="TableNames">
+
+    <!--
+        数据库表名对应配置文件
+    -->
+
+    <sql id="t_tb_project">T_TB_PROJECT</sql>
+    <sql id="t_tb_style">T_TB_STYLE</sql>
+    <sql id="t_tb_wl">T_TB_WL</sql>
+    <sql id="t_tb_gys">T_TB_GYS</sql>
+    <sql id="t_tb_sys_module_group">T_TB_SYS_MODULE_GROUP</sql>
+    <sql id="t_tb_sys_permission">T_TB_SYS_PERMISSION</sql>
+    <sql id="t_tb_sys_role">T_TB_SYS_ROLE</sql>
+    <sql id="t_tb_sys_role_permission">T_TB_SYS_ROLE_PERMISSION</sql>
+    <sql id="t_tb_staffinfo">T_TB_STAFFINFO</sql>
+    <sql id="t_tb_yj">T_TB_YJ</sql>
+    <sql id="t_tb_serialnumber">T_TB_SERIALNUMBER</sql>
+    <sql id="t_tb_yw">T_TB_YW</sql>
+    <sql id="t_tb_product">T_TB_PRODUCT</sql>
+    <sql id="t_tb_fileuploadlog">T_TB_FILEUPLOADLOG</sql>
+    <sql id="t_tb_module">T_TB_MODULE</sql>
+    <sql id="t_tb_jldw">T_TB_JLDW</sql>
+
+</mapper>

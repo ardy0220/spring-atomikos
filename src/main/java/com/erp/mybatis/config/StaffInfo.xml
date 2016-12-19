@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.mybatis.mapper.IUserDao">
+
+    <resultMap type="com.erp.entity.StaffInfo" id="StaffInfoResult">
+        <id column="STAFFID" jdbcType="INTEGER" property="staffId"/>
+        <result column="STAFFCODE" jdbcType="VARCHAR" property="staffCode"/>
+        <result column="STAFFNAME" jdbcType="VARCHAR" property="staffName"/>
+        <result column="PASSWORD" jdbcType="VARCHAR" property="password"/>
+        <result column="TELPHONE" jdbcType="VARCHAR" property="telephone"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="delete" typeHandler="com.erp.handler.DelColumnTypeHandler"/>
+        <result column="STYLEID" jdbcType="INTEGER" property="styleId"/>
+        <result column="STYLE" jdbcType="VARCHAR" property="style"/>
+        <result column="ROLEID" jdbcType="INTEGER" property="roleId"/>
+        <result column="ROLENAME" jdbcType="VARCHAR" property="roleName"/>
+        <result column="STAFFTYPE" jdbcType="CHAR" property="staffType"/>
+        <result column="MODULES" jdbcType="VARCHAR" property="modules"/>
+        <result column="CREATE_DATE" jdbcType="TIME" property="create_date"/>
+        <result column="UPDATE_DATE" jdbcType="TIME" property="update_date"/>
+        <result column="LAST_LOGIN_TIME" jdbcType="TIME" property="last_login_time" typeHandler="com.erp.handler.LastLoginTimeTypeHandler"/>
+        <collection property="permissions" resultMap="Permission.PermissionResult"/>
+    </resultMap>
+
+    <select id="queryStaffByCode" parameterType="com.erp.entity.StaffInfo" resultMap="StaffInfoResult">
+        select s.STAFFID,s.STAFFCODE,s.STAFFNAME,s.PASSWORD,s.TELPHONE,s.STAFFTYPE,s.STYLEID,style.STYLE,s.IS_DEL,
+        s.ROLEID,role.ROLENAME,g.MODULES,s.CREATE_DATE,s.UPDATE_DATE,s.LAST_LOGIN_TIME,p.PERMISSIONID,
+        p.PERMISSIONCODE,p.PERMISSIONNAME,p.PERMISSIONDESC
+        from <include refid="TableNames.t_tb_staffinfo"/> s
+        left join <include refid="TableNames.t_tb_style"/> style on s.STYLEID=style.STYLEID
+        left join <include refid="TableNames.t_tb_sys_role"/> role on s.ROLEID=role.ROLEID and role.IS_DEL='0'
+        left join <include refid="TableNames.t_tb_sys_module_group"/> g on role.GROUPID=g.GROUPID and g.IS_DEL='0'
+        left join <include refid="TableNames.t_tb_sys_role_permission"/> rp on rp.ROLEID=s.ROLEID and rp.IS_DEL='0'
+        left join <include refid="TableNames.t_tb_sys_permission"/> p on rp.PERMISSIONID=p.PERMISSIONID and p.IS_DEL='0'
+        <where>
+            s.IS_DEL='0' and s.STAFFCODE=#{staffCode}
+            <if test="staffId!=null">
+                and s.STAFFID !=#{staffId}
+            </if>
+        </where>
+        order by s.STAFFID asc
+    </select>
+
+    <select id="queryUserData" parameterType="java.lang.String" resultMap="StaffInfoResult">
+        select s.STAFFID,s.STAFFCODE,s.STAFFNAME,s.PASSWORD,s.TELPHONE,s.STAFFTYPE,s.STYLEID,style.STYLE,s.IS_DEL,
+        s.ROLEID,role.ROLENAME,g.MODULES,s.CREATE_DATE,s.UPDATE_DATE,s.LAST_LOGIN_TIME
+        from <include refid="TableNames.t_tb_staffinfo"/> s
+        left join <include refid="TableNames.t_tb_style"/> style on s.STYLEID=style.STYLEID
+        left join <include refid="TableNames.t_tb_sys_role"/> role on s.ROLEID=role.ROLEID and role.IS_DEL='0'
+        left join <include refid="TableNames.t_tb_sys_module_group"/> g on role.GROUPID=g.GROUPID and g.IS_DEL='0'
+        <where>
+            s.IS_DEL='0'
+            <if test="_parameter!=null and !&quot;&quot;.equals(_parameter.trim()) and !&quot;null&quot;.equals(_parameter.trim())">
+                and s.STAFFID=#{_parameter}
+            </if>
+        </where>
+         order by s.STAFFID asc
+    </select>
+
+    <insert id="insertUserData" parameterType="com.erp.entity.StaffInfo">
+        insert into <include refid="TableNames.t_tb_staffinfo"/> (STAFFCODE,STAFFNAME,PASSWORD,
+        <if test="telephone!=null and !&quot;&quot;.equals(telephone.trim()) and !&quot;null&quot;.equals(telephone.trim())">
+            TELPHONE,
+        </if>
+        STAFFTYPE,IS_DEL,STYLEID,
+        <if test="roleId!=null">
+            ROLEID,
+        </if>
+        CREATE_DATE,UPDATE_DATE) values (#{staffCode},#{staffName},#{password},
+        <if test="telephone!=null and !&quot;&quot;.equals(telephone.trim()) and !&quot;null&quot;.equals(telephone.trim())">
+            #{telephone},
+        </if>
+        #{staffType},'0',#{styleId},
+        <if test="roleId!=null">
+            #{roleId},
+        </if>
+        getdate(),getdate())
+    </insert>
+
+    <update id="updateUserData" parameterType="com.erp.entity.StaffInfo">
+        update <include refid="TableNames.t_tb_staffinfo"/>
+        <set>
+            STAFFCODE=#{staffCode},STAFFNAME=#{staffName},PASSWORD=#{password},
+            <choose>
+                <when test="telephone!=null and !&quot;&quot;.equals(telephone.trim()) and !&quot;null&quot;.equals(telephone.trim())">
+                    TELPHONE=#{telephone},
+                </when>
+                <otherwise>
+                    TELPHONE=NULL,
+                </otherwise>
+            </choose>
+            STAFFTYPE=#{staffType},STYLEID=#{styleId},
+            <choose>
+                <when test="roleId!=null">
+                    ROLEID=#{roleId},
+                </when>
+                <otherwise>
+                    ROLEID=NULL,
+                </otherwise>
+            </choose>
+            UPDATE_DATE=getdate()
+        </set>
+        where STAFFID=#{staffId}
+    </update>
+
+    <update id="updateStaffByCode" parameterType="java.lang.String">
+        update <include refid="TableNames.t_tb_staffinfo"/>
+        set last_login_time=getdate()
+        where staffcode=#{staffCode}
+    </update>
+
+    <update id="deleteUserData" parameterType="java.util.List">
+        update <include refid="TableNames.t_tb_staffinfo"/>
+        set IS_DEL='1',UPDATE_DATE=getdate()
+        where STAFFID in (
+            <foreach collection="list" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+</mapper>

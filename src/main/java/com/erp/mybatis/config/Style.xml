@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp.mybatis.mapper.IStyleDao">
+
+    <resultMap type="com.erp.entity.Style" id="StyleResult">
+        <id column="STYLEID" jdbcType="INTEGER" property="styleId"/>
+        <result column="STYLE" jdbcType="VARCHAR" property="style"/>
+        <result column="STYLEDESC" jdbcType="VARCHAR" property="styleDesc"/>
+    </resultMap>
+
+    <select id="queryStyleList" resultMap="StyleResult">
+        select STYLEID,STYLE,STYLEDESC
+        from <include refid="TableNames.t_tb_style"/>
+    </select>
+
+    <update id="updateStyle" parameterType="com.erp.entity.Style" >
+        update <include refid="TableNames.t_tb_style"/>
+        set STYLEDESC=#{styleDesc}
+        where STYLEID=#{styleId}
+    </update>
+
+</mapper>

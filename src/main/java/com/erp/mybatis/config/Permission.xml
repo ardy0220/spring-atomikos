@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Permission">
+
+    <resultMap type="com.erp.entity.Permission" id="PermissionResult">
+        <id column="PERMISSIONID" jdbcType="INTEGER" property="permissionId"/>
+        <result column="MODULEID" jdbcType="INTEGER" property="moduleId"/>
+        <result column="PERMISSIONCODE" jdbcType="VARCHAR" property="permissionCode"/>
+        <result column="PERMISSIONNAME" jdbcType="VARCHAR" property="permissionName"/>
+        <result column="PERMISSIONDESC" jdbcType="VARCHAR" property="permissionDesc"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="is_del"/>
+    </resultMap>
+
+    <select id="queryPermissionByModuleId" parameterType="java.lang.String" resultMap="PermissionResult" flushCache="true" useCache="false">
+        select PERMISSIONID,MODULEID,PERMISSIONCODE,PERMISSIONNAME,PERMISSIONDESC,IS_DEL
+        from <include refid="TableNames.t_tb_sys_permission"/>
+        where IS_DEL='0' and MODULEID=${_parameter}
+    </select>
+
+    <select id="queryPermissionById" parameterType="com.erp.entity.Permission" resultMap="PermissionResult" flushCache="true" useCache="false">
+        select PERMISSIONID,MODULEID,PERMISSIONCODE,PERMISSIONNAME,PERMISSIONDESC,IS_DEL
+        from <include refid="TableNames.t_tb_sys_permission"/>
+        <where>
+            IS_DEL='0' and PERMISSIONCODE=#{permissionCode}
+            <if test="permissionId!=null">
+                and PERMISSIONID!=#{permissionId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertPermission" parameterType="com.erp.entity.Permission">
+        insert into <include refid="TableNames.t_tb_sys_permission"/> (MODULEID,PERMISSIONCODE,PERMISSIONNAME,PERMISSIONDESC,IS_DEL)
+        values (#{moduleId},#{permissionCode},#{permissionName},#{permissionDesc},'0')
+    </insert>
+
+    <update id="updatePermission" parameterType="com.erp.entity.Permission">
+        update <include refid="TableNames.t_tb_sys_permission"/>
+        set PERMISSIONCODE=#{permissionCode},PERMISSIONNAME=#{permissionName},PERMISSIONDESC=#{permissionDesc}
+        where PERMISSIONID=#{permissionId}
+    </update>
+
+    <update id="deletePermission" parameterType="java.util.List">
+        update <include refid="TableNames.t_tb_sys_permission"/>
+        set IS_DEL='1' where PERMISSIONID in(
+            <foreach collection="list" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+</mapper>

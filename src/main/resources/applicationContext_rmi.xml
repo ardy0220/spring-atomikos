@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+    <bean id="serviceExporter" class="org.springframework.remoting.rmi.RmiServiceExporter">
+        <property name="serviceName" value="plusAccountService" />
+        <property name="service" ref="accountService" />
+        <property name="serviceInterface" value="com.erp.rmi.dao.IRmiService" />
+        <property name="registryHost" value="127.0.0.1" />
+        <property name="registryPort" value="8088" />
+        <property name="servicePort" value="8888" />
+    </bean>
+
+    <bean id="accountService" class="com.erp.rmi.dao.impl.RmiServiceImpl" />
+
+</beans>

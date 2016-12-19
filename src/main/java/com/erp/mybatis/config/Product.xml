@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp.mybatis.mapper.IProductDao">
+
+    <resultMap type="com.erp.entity.Product" id="ProductResult">
+        <id column="PRODUCTID" jdbcType="INTEGER" property="productId"/>
+        <result column="PRODUCTNAME" jdbcType="VARCHAR" property="productName"/>
+        <result column="PRODUCTDESC" jdbcType="VARCHAR" property="productDesc"/>
+        <result column="JLDWID" jdbcType="INTEGER" property="jldwId"/>
+        <result column="JLDWMC" jdbcType="VARCHAR" property="jldwmc"/>
+        <result column="PRICE" jdbcType="DOUBLE" property="price"/>
+        <result column="THUMBNAILURL" jdbcType="VARCHAR" property="thumbnailUrl"/>
+        <result column="IS_VALID" jdbcType="CHAR" property="is_valid"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="delete" typeHandler="com.erp.handler.DelColumnTypeHandler"/>
+        <result column="CREATE_STAFFID" jdbcType="INTEGER" property="create_staffId"/>
+        <result column="CREATE_STAFFNAME" jdbcType="VARCHAR" property="create_staffName"/>
+        <result column="CREATE_DATE" jdbcType="TIME" property="create_date"/>
+        <result column="UPDATE_STAFFID" jdbcType="INTEGER" property="update_staffId"/>
+        <result column="UPDATE_STAFFNAME" jdbcType="VARCHAR" property="update_staffName"/>
+        <result column="UPDATE_DATE" jdbcType="TIME" property="update_date"/>
+    </resultMap>
+
+    <resultMap type="com.erp.entity.FileUploadLog" id="FileUploadLogResult">
+        <id column="DBID" jdbcType="INTEGER" property="dbid"/>
+        <result column="PRODUCTID" jdbcType="INTEGER" property="productId"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="URL" jdbcType="VARCHAR" property="url"/>
+        <result column="THUMBNAILURL" jdbcType="VARCHAR" property="thumbnailurl"/>
+        <result column="DELETEURL" jdbcType="VARCHAR" property="deleteurl"/>
+        <result column="IS_PIC_VALID" jdbcType="CHAR" property="is_pic_valid"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="is_del"/>
+        <result column="CREATE_STAFFID" jdbcType="INTEGER" property="create_staffId"/>
+        <result column="CREATE_DATE" jdbcType="TIME" property="create_date"/>
+        <result column="UPDATE_STAFFID" jdbcType="INTEGER" property="update_staffId"/>
+        <result column="UPDATE_DATE" jdbcType="TIME" property="update_date"/>
+    </resultMap>
+
+    <select id="queryProduct" resultMap="ProductResult">
+        select p.PRODUCTID, p.PRODUCTNAME, p.PRODUCTDESC,p.JLDWID,j.JLDWMC,p.PRICE,
+        t1.THUMBNAILURL,p.IS_VALID,p.IS_DEL,p.CREATE_STAFFID,p.CREATE_DATE,p.UPDATE_STAFFID,
+        p.UPDATE_DATE,s.STAFFNAME as CREATE_STAFFNAME,s1.STAFFNAME as UPDATE_STAFFNAME
+        from <include refid="TableNames.t_tb_product"/> p
+        left join <include refid="TableNames.t_tb_staffinfo"/> s on p.CREATE_STAFFID=s.STAFFID and s.IS_DEL='0'
+        left join <include refid="TableNames.t_tb_staffinfo"/> s1 on p.UPDATE_STAFFID = s1.STAFFID and s1.IS_DEL='0'
+        left join <include refid="TableNames.t_tb_jldw"/> j on p.JLDWID=j.JLDWID and j.IS_DEL='0'
+        left join (
+            select max(t.THUMBNAILURL) as THUMBNAILURL,t.PRODUCTID as PRODUCTID
+            from <include refid="TableNames.t_tb_fileuploadlog"/> t
+            where t.IS_DEL='0' and t.IS_PIC_VALID='1' group by t.PRODUCTID
+        ) t1 on p.PRODUCTID=t1.PRODUCTID
+        where p.IS_DEL='0'
+    </select>
+
+    <insert id="insertProduct" parameterType="com.erp.entity.Product">
+        insert into <include refid="TableNames.t_tb_product"/>
+            (PRODUCTNAME,PRODUCTDESC,JLDWID,PRICE,IS_VALID,IS_DEL,CREATE_STAFFID,CREATE_DATE,UPDATE_STAFFID,UPDATE_DATE)
+        values (#{productName},#{productDesc},#{jldwId},#{price},'0','0',#{create_staffId},getdate(),#{update_staffId},getdate())
+    </insert>
+
+    <update id="updateProduct" parameterType="com.erp.entity.Product">
+        update <include refid="TableNames.t_tb_product"/>
+        set PRODUCTNAME=#{productName},PRODUCTDESC=#{productDesc},
+            JLDWID=#{jldwId},PRICE=#{price},UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where PRODUCTID=#{productId}
+    </update>
+
+    <update id="updateProductValid" parameterType="java.util.Map">
+        update <include refid="TableNames.t_tb_product"/>
+        set IS_VALID=#{is_valid},UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where PRODUCTID in (
+            <foreach collection="productIdList" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+    <update id="deleteProduct" parameterType="java.util.Map">
+        update <include refid="TableNames.t_tb_product"/>
+        set IS_DEL='1',UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where PRODUCTID in (
+            <foreach collection="productIdList" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+    <select id="queryFileUploadLog" parameterType="java.util.Map" resultMap="FileUploadLogResult">
+        select DBID,PRODUCTID,NAME,URL,THUMBNAILURL,DELETEURL,IS_PIC_VALID,
+        IS_DEL,CREATE_STAFFID,CREATE_DATE,UPDATE_STAFFID,UPDATE_DATE
+        from <include refid="TableNames.t_tb_fileuploadlog"/>
+        <where>
+            <if test="&quot;1&quot;.equals(queryAll)">
+                IS_DEL='0'
+            </if>
+            and PRODUCTID=#{productId}
+        </where>
+    </select>
+
+    <insert id="insertFileUploadLog" useGeneratedKeys="true" keyProperty="dbid" parameterType="com.erp.entity.FileUploadLog">
+        insert into <include refid="TableNames.t_tb_fileuploadlog"/> (PRODUCTID,NAME,URL,THUMBNAILURL,
+        <if test="deleteurl!=null and !&quot;&quot;.equals(deleteurl.trim()) and !&quot;null&quot;.equals(deleteurl.trim())">
+            DELETEURL,
+        </if>
+        IS_PIC_VALID,IS_DEL,CREATE_STAFFID,CREATE_DATE,UPDATE_STAFFID,UPDATE_DATE)
+        values (#{productId},#{name},#{url},#{thumbnailurl},
+        <if test="deleteurl!=null and !&quot;&quot;.equals(deleteurl.trim()) and !&quot;null&quot;.equals(deleteurl.trim())">
+            #{deleteurl},
+        </if>
+        '1','0',#{create_staffId},getdate(),#{update_staffId},getdate())
+    </insert>
+
+    <update id="updateFileUploadLog" parameterType="java.util.Map">
+        update <include refid="TableNames.t_tb_fileuploadlog"/>
+        set DELETEURL=#{deleteurl},UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where DBID=#{dbid}
+    </update>
+
+    <update id="resumeOrDeleteFileUploadLog" parameterType="java.util.Map">
+        update <include refid="TableNames.t_tb_fileuploadlog"/>
+        set IS_PIC_VALID=#{is_pic_valid},IS_DEL=#{is_del},UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where DBID=#{dbid}
+    </update>
+
+</mapper>

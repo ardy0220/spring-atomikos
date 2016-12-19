@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <!--
+      <settings>
+        <setting name="useGeneratedKeys" value="false"/>
+        <setting name="useColumnLabel" value="true"/>
+      </settings>
+
+      <typeAliases>
+        <typeAlias alias="UserAlias" type="org.apache.ibatis.submitted.complex_property.User"/>
+      </typeAliases> -->
+
+
+
+    <typeHandlers>
+        <typeHandler handler="com.erp.handler.DelColumnTypeHandler" javaType="java.lang.Boolean" jdbcType="CHAR"/>
+        <typeHandler handler="com.erp.handler.LastLoginTimeTypeHandler" javaType="java.util.Date" jdbcType="TIME"/>
+    </typeHandlers>
+
+    <mappers>
+        <mapper resource="com/erp/mybatis/config/TableNames.xml"/>
+        <mapper resource="com/erp/mybatis/config/Style.xml"/>
+        <mapper resource="com/erp/mybatis/config/Project.xml"/>
+        <mapper resource="com/erp/mybatis/config/StaffInfo.xml"/>
+        <mapper resource="com/erp/mybatis/config/Permission.xml"/>
+        <mapper resource="com/erp/mybatis/config/RolePermission.xml"/>
+        <mapper resource="com/erp/mybatis/config/Role.xml"/>
+        <mapper resource="com/erp/mybatis/config/Group.xml"/>
+        <mapper resource="com/erp/mybatis/config/Jldw.xml"/>
+        <mapper resource="com/erp/mybatis/config/Wl.xml"/>
+        <mapper resource="com/erp/mybatis/config/Gys.xml"/>
+        <mapper resource="com/erp/mybatis/config/Module.xml"/>
+        <mapper resource="com/erp/mybatis/config/Yw.xml"/>
+        <mapper resource="com/erp/mybatis/config/SerialNumber.xml"/>
+        <mapper resource="com/erp/mybatis/config/Product.xml"/>
+        <mapper resource="com/erp/mybatis/config/Yj.xml"/>
+        <mapper resource="com/erp/mybatis/config/DatasetVO.xml"/>
+    </mappers>
+
+</configuration>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SerialNumber">
+
+    <resultMap type="com.erp.entity.SerialNumber" id="SerialNumberResult">
+        <id column="DBID" jdbcType="INTEGER" property="dbid"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="VALUE" jdbcType="INTEGER" property="value"/>
+        <result column="CREATE_DATE" jdbcType="TIME" property="create_date"/>
+        <result column="UPDATE_DATE" jdbcType="TIME" property="update_date"/>
+    </resultMap>
+
+    <select id="getSerialNumber" parameterType="java.lang.String" resultMap="SerialNumberResult">
+        select DBID,NAME,VALUE,CREATE_DATE,UPDATE_DATE
+        from <include refid="TableNames.t_tb_serialnumber"/>
+        where NAME=#{_parameter}
+    </select>
+
+    <insert id="insertSerialNumber" parameterType="java.lang.String">
+        insert into <include refid="TableNames.t_tb_serialnumber"/> (NAME,VALUE,CREATE_DATE,UPDATE_DATE)
+        values (#{_parameter}, 1, getdate(), getdate())
+    </insert>
+
+    <update id="updateSerialNumber" parameterType="java.lang.String">
+        update <include refid="TableNames.t_tb_serialnumber"/>
+        set VALUE=VALUE+1, UPDATE_DATE=getdate()
+        where NAME=#{_parameter}
+    </update>
+
+</mapper>

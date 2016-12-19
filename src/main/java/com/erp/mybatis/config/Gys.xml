@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp.mybatis.mapper.IZSJDataDao">
+
+    <resultMap type="com.erp.entity.Gys" id="GysResult">
+        <id column="DBID" jdbcType="INTEGER" property="gysId"/>
+        <result column="GYSBM" jdbcType="VARCHAR" property="gysbm"/>
+        <result column="GYSMC" jdbcType="VARCHAR" property="gysmc"/>
+        <result column="GYSMS" jdbcType="VARCHAR" property="gysms"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="delete" typeHandler="com.erp.handler.DelColumnTypeHandler"/>
+        <result column="CREATE_STAFFID" jdbcType="INTEGER" property="create_staffId"/>
+        <result column="CREATE_DATE" jdbcType="TIME" property="create_date"/>
+        <result column="UPDATE_STAFFID" jdbcType="INTEGER" property="update_staffId"/>
+        <result column="UPDATE_DATE" jdbcType="TIME" property="update_date"/>
+    </resultMap>
+
+    <select id="queryGysList" resultMap="GysResult">
+        select DBID,GYSBM,GYSMC,GYSMS,IS_DEL,CREATE_STAFFID,CREATE_DATE,UPDATE_STAFFID,UPDATE_DATE
+        from <include refid="TableNames.t_tb_gys"/>
+        where IS_DEL='0'
+        order by DBID asc
+    </select>
+
+    <insert id="insertGys" parameterType="com.erp.entity.Gys">
+        insert into <include refid="TableNames.t_tb_gys"/> (GYSBM,GYSMC,
+        <if test="gysms!=null and !&quot;&quot;.equals(gysms.trim()) and !&quot;null&quot;.equals(gysms.trim())">
+            GYSMS,
+        </if>
+            IS_DEL,CREATE_STAFFID,CREATE_DATE,UPDATE_STAFFID,UPDATE_DATE)
+        values(#{gysbm},#{gysmc},
+        <if test="gysms!=null and !&quot;&quot;.equals(gysms.trim()) and !&quot;null&quot;.equals(gysms.trim())">
+            #{gysms},
+        </if>
+            '0',#{create_staffId},getdate(),#{update_staffId},getdate())
+    </insert>
+
+    <update id="updateGys" parameterType="com.erp.entity.Gys">
+        update <include refid="TableNames.t_tb_gys"/>
+        set GYSMC=#{gysmc},
+        <choose>
+            <when test="gysms!=null and !&quot;&quot;.equals(gysms.trim()) and !&quot;null&quot;.equals(gysms.trim())">
+                GYSMS=#{gysms},
+            </when>
+            <otherwise>
+                GYSMS=NULL,
+            </otherwise>
+        </choose>
+            UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where DBID=#{gysId}
+    </update>
+
+    <update id="deleteGys" parameterType="java.util.Map">
+        update <include refid="TableNames.t_tb_gys"/>
+        set IS_DEL='1',UPDATE_STAFFID=#{update_staffId},UPDATE_DATE=getdate()
+        where DBID in (
+            <foreach collection="gysIdList" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RolePermission">
+
+    <resultMap type="com.erp.entity.RolePermission" id="RolePermissionResult">
+        <id column="DBID" jdbcType="INTEGER" property="dbid"/>
+        <result column="ROLEID" jdbcType="INTEGER" property="roleId"/>
+        <result column="PERMISSIONID" jdbcType="INTEGER" property="permissionId"/>
+        <result column="PERMISSIONCODE" jdbcType="VARCHAR" property="permissionCode"/>
+        <result column="PERMISSIONNAME" jdbcType="VARCHAR" property="permissionName"/>
+        <result column="PERMISSIONDESC" jdbcType="VARCHAR" property="permissionDesc"/>
+        <result column="IS_DEL" jdbcType="CHAR" property="is_del"/>
+    </resultMap>
+
+    <select id="queryRolePermission" parameterType="java.lang.String" resultMap="RolePermissionResult">
+        select rp.DBID,rp.ROLEID,rp.PERMISSIONID,rp.IS_DEL,p.PERMISSIONCODE,p.PERMISSIONNAME,p.PERMISSIONDESC
+        from <include refid="TableNames.t_tb_sys_role_permission"/> rp
+        left join <include refid="TableNames.t_tb_sys_permission"/> p on rp.PERMISSIONID=p.PERMISSIONID and p.IS_DEL='0'
+        where rp.IS_DEL='0' and rp.ROLEID=#{_parameter}
+    </select>
+
+    <insert id="insertRolePermission" parameterType="java.util.List">
+        insert into <include refid="TableNames.t_tb_sys_role_permission"/>(ROLEID,PERMISSIONID,IS_DEL)
+        values (#{roleId},#{permissionId},'0')
+    </insert>
+
+    <update id="updateRoleByRoleId1" parameterType="java.lang.Integer">
+        update <include refid="TableNames.t_tb_sys_role"/>
+        set IS_INIT_PERMISSION='1'
+        where ROLEID=#{_parameter}
+    </update>
+
+    <update id="deleteRolePermissionByDbid" parameterType="java.util.List">
+        update <include refid="TableNames.t_tb_sys_role_permission"/>
+        set IS_DEL='1'
+        where DBID in (
+            <foreach collection="list" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+    <update id="updateRoleByRoleId0" parameterType="java.lang.String">
+        update <include refid="TableNames.t_tb_sys_role"/>
+        set IS_INIT_PERMISSION='0'
+        where ROLEID=#{_parameter}
+    </update>
+
+    <update id="deleteRolePermissionByPermissionId" parameterType="java.util.List">
+        update <include refid="TableNames.t_tb_sys_role_permission"/>
+        set IS_DEL='1'
+        where PERMISSIONID in (
+            <foreach collection="list" item="item" separator=",">
+                #{item}
+            </foreach>
+        )
+    </update>
+
+</mapper>
