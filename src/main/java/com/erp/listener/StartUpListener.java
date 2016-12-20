@@ -48,7 +48,7 @@ public class StartUpListener implements ServletContextListener {
      */
     private void initYJ(ServletContext context) {
         WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
-        SqlSessionFactory factory = (SqlSessionFactory) wac.getBean("sqlSessionFactory");
+        SqlSessionFactory factory = (SqlSessionFactory) wac.getBean("mssqlSessionFactory");
         SqlSession session = factory.openSession();
         String initYJ = "0"; // 0为未初始化，1为初始化
         try {

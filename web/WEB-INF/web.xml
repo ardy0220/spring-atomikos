@@ -11,7 +11,9 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            classpath:applicationContext_mybatis.xml
+            classpath:applicationContext_atomikos_nonxa.xml
+            <!--classpath:applicationContext_atomikos.xml-->
+            <!--classpath:applicationContext_mybatis.xml-->
             ,classpath:applicationContext_cxf.xml
         </param-value>
     </context-param>

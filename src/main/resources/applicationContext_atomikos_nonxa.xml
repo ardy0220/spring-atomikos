@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+             http://www.springframework.org/schema/aop
+             http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+             http://www.springframework.org/schema/tx
+             http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+             http://www.springframework.org/schema/context
+             http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <!-- 开启自动扫包 -->
+    <context:component-scan base-package="com.erp">
+        <!--制定扫包规则，不扫描@Controller注解的JAVA类，其他的还是要扫描  -->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 引入外部数据源配置信息 -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations" value="classpath:db.properties"></property>
+    </bean>
+
+    <!-- 配置dataSource -->
+    <!-- MSSQL -->
+    <bean id="mssqlDataSource" class="com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean">
+        <property name="uniqueResourceName">
+            <value>mssqlXADataSource</value>
+        </property>
+        <property name="driverClassName">
+            <value>${mssql.driver.classname}</value>
+        </property>
+        <property name="url">
+            <value>${mssql.url}</value>
+        </property>
+        <property name="user">
+            <value>${mssql.username}</value>
+        </property>
+        <property name="password">
+            <value>${mssql.password}</value>
+        </property>
+        <property name="poolSize" value="10"/>
+        <property name="minPoolSize" value="10"/>
+        <property name="maxPoolSize" value="30"/>
+        <property name="borrowConnectionTimeout" value="60"/>
+    </bean>
+
+    <!-- MYSQL -->
+    <bean id="mysqlDataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean">
+        <property name="uniqueResourceName">
+            <value>mysqlXADataSource</value>
+        </property>
+        <property name="xaDataSourceClassName">
+            <value>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</value>
+        </property>
+        <property name="xaProperties">
+            <props>
+                <prop key="URL">${mysql.url}</prop>
+                <prop key="user">${mysql.username}</prop>
+                <prop key="password">${mysql.password}</prop>
+                <prop key="pinGlobalTxToPhysicalConnection">true</prop>
+                <prop key="autoReconnect">true</prop>
+            </props>
+        </property>
+        <property name="poolSize" value="10"/>
+        <property name="minPoolSize" value="10"/>
+        <property name="maxPoolSize" value="30"/>
+        <property name="borrowConnectionTimeout" value="60"/>
+    </bean>
+
+    <!-- MYSQL -->
+    <bean id="mysql2DataSource" class="com.atomikos.jdbc.AtomikosDataSourceBean">
+        <property name="uniqueResourceName">
+            <value>mysql2XADataSource</value>
+        </property>
+        <property name="xaDataSourceClassName">
+            <value>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</value>
+        </property>
+        <property name="xaProperties">
+            <props>
+                <prop key="URL">${mysql2.url}</prop>
+                <prop key="user">${mysql2.username}</prop>
+                <prop key="password">${mysql2.password}</prop>
+                <prop key="pinGlobalTxToPhysicalConnection">true</prop>
+                <prop key="autoReconnect">true</prop>
+            </props>
+        </property>
+        <property name="poolSize" value="10"/>
+        <property name="minPoolSize" value="10"/>
+        <property name="maxPoolSize" value="30"/>
+        <property name="borrowConnectionTimeout" value="60"/>
+    </bean>
+    <!-- 配置dataSource结束........ -->
+
+
+    <!-- 配置Session工厂 -->
+    <!-- MSSQL -->
+    <bean id="mssqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="mssqlDataSource"></property>
+        <!-- 加载mybatis.cfg.xml文件 -->
+        <property name="configLocation" value="classpath:mybatis.xml"></property>
+
+        <!--<property name="typeHandlers">-->
+        <!--<array>-->
+        <!--<value>com.erp.handler.DelColumnTypeHandler</value>-->
+        <!--<value>com.erp.handler.LastLoginTimeTypeHandler</value>-->
+        <!--</array>-->
+        <!--</property>-->
+
+        <!--
+            在classpath后面的*必不可少，缺少型号的话后面的通配符不起作用。
+            **表示可以表示任意多级目录
+            *表示多个任意字符
+         -->
+        <!--<property name="mapperLocations" value="classpath*:com/erp/config/*.xml"></property>-->
+        <!-- 自动扫描需要定义类别名的包，将包内的JAVA类的类名作为类别名 -->
+        <!--<property name="typeAliasesPackage" value="com.cy.ssm.beans"></property>-->
+    </bean>
+
+    <!-- MYSQL -->
+    <bean id="mysqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="mysqlDataSource"></property>
+        <!-- 加载mybatis.cfg.xml文件 -->
+        <!--<property name="configLocation" value="classpath:mybatis.xml"></property>-->
+
+        <!--
+            在classpath后面的*必不可少，缺少型号的话后面的通配符不起作用。
+            **表示可以表示任意多级目录
+            *表示多个任意字符
+         -->
+        <property name="mapperLocations" value="classpath*:com/erp/activiti/config/*.xml"></property>
+        <!-- 自动扫描需要定义类别名的包，将包内的JAVA类的类名作为类别名 -->
+        <!--<property name="typeAliasesPackage" value="com.cy.ssm.beans"></property>-->
+    </bean>
+
+    <bean id="mysql2SessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="mysql2DataSource"></property>
+        <!-- 加载mybatis.cfg.xml文件 -->
+        <!--<property name="configLocation" value="classpath:mybatis.xml"></property>-->
+
+        <!--
+            在classpath后面的*必不可少，缺少型号的话后面的通配符不起作用。
+            **表示可以表示任意多级目录
+            *表示多个任意字符
+         -->
+        <property name="mapperLocations" value="classpath*:com/erp/activiti/test/config/*.xml"></property>
+        <!-- 自动扫描需要定义类别名的包，将包内的JAVA类的类名作为类别名 -->
+        <!--<property name="typeAliasesPackage" value="com.cy.ssm.beans"></property>-->
+    </bean>
+    <!-- 配置Session工厂结束........ -->
+
+
+    <!--<bean id="mapperFactoryBean" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+    <!--<property name="mapperInterface" value="com.erp.mybatis.mapper.IProjectDao"></property>-->
+    <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"></property>-->
+    <!--</bean>-->
+
+    <!-- 配置接口式事务 -->
+    <!-- MSSQL -->
+    <bean id="mssqlMapper" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.erp.mybatis.mapper,com.erp.chart.dao"></property>
+        <property name="sqlSessionFactoryBeanName" value="mssqlSessionFactory"></property>
+    </bean>
+
+    <!-- MYSQL -->
+    <bean id="mysqlMapper" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.erp.activiti.mapper"></property>
+        <property name="sqlSessionFactoryBeanName" value="mysqlSessionFactory"></property>
+    </bean>
+
+    <bean id="mysql2Mapper" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.erp.activiti.test.mapper"></property>
+        <property name="sqlSessionFactoryBeanName" value="mysql2SessionFactory"></property>
+    </bean>
+    <!-- 配置接口式事务结束....... -->
+
+
+    <!-- 事务这块用spring管理atomikos -->
+    <!--<bean id="userTransactionService"-->
+          <!--class="com.atomikos.icatch.config.UserTransactionServiceImp" init-method="init" destroy-method="shutdownForce">-->
+        <!--<constructor-arg>-->
+            <!--<props>-->
+                <!--<prop key="com.atomikos.icatch.service">com.atomikos.icatch.standalone.UserTransactionServiceFactory</prop>-->
+            <!--</props>-->
+        <!--</constructor-arg>-->
+    <!--</bean>-->
+
+    <bean id="atomikosTransactionManager" class="com.atomikos.icatch.jta.UserTransactionManager"
+          init-method="init" destroy-method="close">
+        <property name="forceShutdown">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp">
+        <property name="transactionTimeout" value="300"/>
+    </bean>
+
+    <bean id="springTransactionManager"
+          class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManager">
+            <ref bean="atomikosTransactionManager"/>
+        </property>
+        <property name="userTransaction">
+            <ref bean="atomikosUserTransaction"/>
+        </property>
+        <!-- 必须设置，否则程序出现异常 JtaTransactionManager does not support custom isolation levels by default -->
+        <property name="allowCustomIsolationLevels" value="true"/>
+    </bean>
+    <!-- 支持 @AspectJ 标记 开启AOP支持-->
+    <aop:aspectj-autoproxy/>
+    <tx:annotation-driven transaction-manager="springTransactionManager"/>
+
+    <!-- 配置事务传播特性:如果存在一个事务，则支持当前事务。如果没有事务则开启：REQUIRED -->
+    <tx:advice id="txAdvice" transaction-manager="springTransactionManager">
+        <tx:attributes>
+            <tx:method name="delete*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="save*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="insert*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="resume*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="update*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="get*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception"/>
+            <tx:method name="query*" propagation="SUPPORTS" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 以AspectJ方式 定义 AOP -->
+    <aop:config proxy-target-class="true">
+        <!-- 配置一个切入点 -->
+        <aop:pointcut id="serviceMethods" expression="execution(* com.erp.dao.impl.*Impl.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethods"/>
+    </aop:config>
+
+</beans>

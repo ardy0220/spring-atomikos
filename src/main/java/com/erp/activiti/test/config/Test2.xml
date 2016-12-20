@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp.activiti.test.mapper.ITest2Dao">
+
+    <update id="updateData" parameterType="java.lang.String">
+        update staffinfo
+        <choose>
+            <when test="_parameter!=null and !&quot;&quot;.equals(_parameter.trim())">
+                set staffname=#{_parameter}
+            </when>
+            <otherwise>
+                set staffname=NULL
+            </otherwise>
+        </choose>
+        where staffid=1376
+    </update>
+
+</mapper>

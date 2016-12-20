@@ -15,8 +15,8 @@ public class SerialNumberDaoImpl implements ISerialNumberDao {
     private SqlSessionTemplate sqlSessionTemplate;
 
     @Autowired
-    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) {
-        this.sqlSessionTemplate = new SqlSessionTemplate(sqlSessionFactory);
+    public void setSqlSessionFactory(SqlSessionFactory mssqlSessionFactory) {
+        this.sqlSessionTemplate = new SqlSessionTemplate(mssqlSessionFactory);
     }
 
     /**
