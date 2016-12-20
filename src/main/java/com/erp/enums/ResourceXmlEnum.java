@@ -9,8 +9,7 @@ import java.io.File;
  */
 public enum ResourceXmlEnum {
 
-    path_chart("charts.xml"),
-    path_beanconfig("beanconfig.xml");
+    path_chart("charts.xml");
 
     private String value;
 
